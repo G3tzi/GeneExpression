@@ -201,15 +201,15 @@ str(results, max.level = 2)
 
 # $original_data          - Original ExpressionSet
 # $processed_data         - Processed/normalized ExpressionSet
-# $outlier_info          - Outlier detection results
-# $clustering_results    - Results from all clustering methods
-#   $hierarchical        - Hierarchical clustering results
-#   $kmeans             - K-means clustering results
-#   $dbscan             - DBSCAN clustering results (if used)
-# $validation_results    - Clustering validation metrics
-# $plots                - All generated visualizations
-# $enrichment_results   - Pathway enrichment analysis
-# $summary              - Analysis summary statistics
+# $outlier_info           - Outlier detection results
+# $clustering_results     - Results from all clustering methods
+#   $hierarchical         - Hierarchical clustering results
+#   $kmeans               - K-means clustering results
+#   $dbscan               - DBSCAN clustering results (if used)
+# $validation_results     - Clustering validation metrics
+# $plots                  - All generated visualizations
+# $enrichment_results     - Pathway enrichment analysis
+# $summary                - Analysis summary statistics
 ```
 
 ### Accessing Results
