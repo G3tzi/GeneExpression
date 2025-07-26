@@ -1,0 +1,69 @@
+
+R version 4.4.2 (2024-10-31 ucrt) -- "Pile of Leaves"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # This file is part of the standard setup for testthat.
+> # It is recommended that you do not modify it.
+> #
+> # Where should you do additional test configuration?
+> # Learn more about the roles of various files in:
+> # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
+> # * https://testthat.r-lib.org/articles/special-files.html
+> 
+> library(testthat)
+Warning message:
+package 'testthat' was built under R version 4.4.3 
+> library(GeneExprClust)
+> 
+> testthat::test_check("GeneExprClust")
+1 outlier genes removed.
+1 outlier genes removed.
+1 outliers detected, but not removed.
+1 outlier genes removed.
+2 outlier genes removed.
+1 outlier genes removed.
+0 outliers detected, but not removed.
+Filtering out 5 low-expressed genes.
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, aperm, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, saveRDS, setdiff, table,
+    tapply, union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+[ FAIL 0 | WARN 4 | SKIP 0 | PASS 118 ]
+
+[ FAIL 0 | WARN 4 | SKIP 0 | PASS 118 ]
+> 
+> proc.time()
+   user  system elapsed 
+  12.70    1.23   14.15 

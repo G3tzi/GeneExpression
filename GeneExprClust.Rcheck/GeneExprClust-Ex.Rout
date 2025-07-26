@@ -1,0 +1,1208 @@
+
+R version 4.4.2 (2024-10-31 ucrt) -- "Pile of Leaves"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "GeneExprClust"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> options(pager = "console")
+> library('GeneExprClust')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("cluster_expression")
+> ### * cluster_expression
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: cluster_expression
+> ### Title: Unified clustering function with multiple methods
+> ### Aliases: cluster_expression
+> 
+> ### ** Examples
+> 
+> # Hierarchical clustering with automatic cluster assignment
+> data(eset)
+> hc_result <- cluster_expression(eset, method = "hierarchical", k = 4)
+> table(hc_result$clusters)
+
+1 2 3 4 
+1 4 2 3 
+> 
+> # K-means clustering
+> km_result <- cluster_expression(eset, method = "kmeans", k = 3, target = "sample")
+> print(km_result$clusters)
+ Sample1  Sample2  Sample3  Sample4  Sample5  Sample6  Sample7  Sample8 
+       1        3        3        3        3        3        1        2 
+ Sample9 Sample10 
+       3        3 
+> 
+> # DBSCAN clustering
+> db_result <- cluster_expression(eset, method = "dbscan", eps = 2.0, minPts = 5)
+Warning in dbscan_cluster(eset, target = target, ...) :
+  DBSCAN found no clusters - all points are noise.
+> summary(as.factor(db_result$clusters))
+ 0 
+10 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("create_example_gene_sets")
+> ### * create_example_gene_sets
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: create_example_gene_sets
+> ### Title: Create Simple Example Gene Sets
+> ### Aliases: create_example_gene_sets
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Create example gene sets
+> example_sets <- create_example_gene_sets(rownames(eset), n_pathways = 20)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dbscan_cluster")
+> ### * dbscan_cluster
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dbscan_cluster
+> ### Title: Cluster genes using DBSCAN
+> ### Aliases: dbscan_cluster
+> 
+> ### ** Examples
+> 
+> # DBSCAN clustering of genes
+> data(eset)
+> db_genes <- dbscan_cluster(eset, eps = 2.5, minPts = 3, target = "gene")
+> table(db_genes$cluster)  # 0 indicates noise points
+
+0 1 
+7 3 
+> 
+> # DBSCAN clustering of samples with correlation distance
+> db_samples <- dbscan_cluster(eset, eps = 0.3, minPts = 2, 
++                             distance = "correlation", target = "sample")
+Warning in dbscan_cluster(eset, eps = 0.3, minPts = 2, distance = "correlation",  :
+  DBSCAN found no clusters - all points are noise.
+> print(db_samples$cluster)
+ Sample1  Sample2  Sample3  Sample4  Sample5  Sample6  Sample7  Sample8 
+       0        0        0        0        0        0        0        0 
+ Sample9 Sample10 
+       0        0 
+> 
+> # Check for noise points (cluster = 0)
+> noise_genes <- names(db_genes$cluster)[db_genes$cluster == 0]
+> message(paste("Number of noise genes: ", length(noise_genes)))
+Number of noise genes:  7
+> 
+> 
+> 
+> cleanEx()
+> nameEx("detect_outliers")
+> ### * detect_outliers
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: detect_outliers
+> ### Title: Detect and optionally remove outlier genes based on variability
+> ### Aliases: detect_outliers
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Detect and remove outlier genes using MAD method
+> eset_filtered <- detect_outliers(eset, plot = TRUE)
+2 outlier genes removed.
+> 
+> 
+> 
+> cleanEx()
+> nameEx("eset")
+> ### * eset
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: eset
+> ### Title: Example Expression Set
+> ### Aliases: eset
+> ### Keywords: datasets
+> 
+> ### ** Examples
+> 
+> data(eset)
+> str(eset)
+Formal class 'ExpressionSet' [package "Biobase"] with 7 slots
+  ..@ experimentData   :Formal class 'MIAME' [package "Biobase"] with 13 slots
+  .. .. ..@ name             : chr ""
+  .. .. ..@ lab              : chr ""
+  .. .. ..@ contact          : chr ""
+  .. .. ..@ title            : chr ""
+  .. .. ..@ abstract         : chr ""
+  .. .. ..@ url              : chr ""
+  .. .. ..@ pubMedIds        : chr ""
+  .. .. ..@ samples          : list()
+  .. .. ..@ hybridizations   : list()
+  .. .. ..@ normControls     : list()
+  .. .. ..@ preprocessing    : list()
+  .. .. ..@ other            : list()
+  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+  .. .. .. .. ..@ .Data:List of 2
+  .. .. .. .. .. ..$ : int [1:3] 1 0 0
+  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+  .. .. .. .. ..$ names: chr [1:2] "MIAxE" "MIAME"
+  ..@ assayData        :<environment: 0x000001c149d76310> 
+  ..@ phenoData        :Formal class 'AnnotatedDataFrame' [package "Biobase"] with 4 slots
+  .. .. ..@ varMetadata      :'data.frame':	1 obs. of  1 variable:
+  .. .. .. ..$ labelDescription: chr NA
+  .. .. ..@ data             :'data.frame':	10 obs. of  1 variable:
+  .. .. .. ..$ condition: chr [1:10] "A" "A" "A" "A" ...
+  .. .. ..@ dimLabels        : chr [1:2] "sampleNames" "sampleColumns"
+  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+  .. .. .. .. ..@ .Data:List of 1
+  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+  .. .. .. .. ..$ names: chr "AnnotatedDataFrame"
+  ..@ featureData      :Formal class 'AnnotatedDataFrame' [package "Biobase"] with 4 slots
+  .. .. ..@ varMetadata      :'data.frame':	0 obs. of  1 variable:
+  .. .. .. ..$ labelDescription: chr(0) 
+  .. .. ..@ data             :'data.frame':	10 obs. of  0 variables
+  .. .. ..@ dimLabels        : chr [1:2] "featureNames" "featureColumns"
+  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+  .. .. .. .. ..@ .Data:List of 1
+  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+  .. .. .. .. ..$ names: chr "AnnotatedDataFrame"
+  ..@ annotation       : chr(0) 
+  ..@ protocolData     :Formal class 'AnnotatedDataFrame' [package "Biobase"] with 4 slots
+  .. .. ..@ varMetadata      :'data.frame':	0 obs. of  1 variable:
+  .. .. .. ..$ labelDescription: chr(0) 
+  .. .. ..@ data             :'data.frame':	10 obs. of  0 variables
+  .. .. ..@ dimLabels        : chr [1:2] "sampleNames" "sampleColumns"
+  .. .. ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+  .. .. .. .. ..@ .Data:List of 1
+  .. .. .. .. .. ..$ : int [1:3] 1 1 0
+  .. .. .. .. ..$ names: chr "AnnotatedDataFrame"
+  ..@ .__classVersion__:Formal class 'Versions' [package "Biobase"] with 1 slot
+  .. .. ..@ .Data:List of 4
+  .. .. .. ..$ : int [1:3] 4 4 1
+  .. .. .. ..$ : int [1:3] 2 66 0
+  .. .. .. ..$ : int [1:3] 1 3 0
+  .. .. .. ..$ : int [1:3] 1 0 0
+  .. .. ..$ names: chr [1:4] "R" "Biobase" "eSet" "ExpressionSet"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("extract_gene_names")
+> ### * extract_gene_names
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: extract_gene_names
+> ### Title: Extract Gene Names from ExpressionSet
+> ### Aliases: extract_gene_names
+> 
+> ### ** Examples
+> 
+> # Create a sample ExpressionSet
+> library(Biobase)
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, aperm, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, saveRDS, setdiff, table,
+    tapply, union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+> 
+> # Create expression matrix
+> expr_matrix <- matrix(rnorm(100), nrow = 10, ncol = 10)
+> rownames(expr_matrix) <- paste0("probe_", 1:10)
+> colnames(expr_matrix) <- paste0("sample_", 1:10)
+> 
+> # Create feature data with gene symbols
+> feature_data <- data.frame(
++   SYMBOL = c("GENE1", "GENE2", "GENE3", "GENE4", "GENE5", 
++              "GENE6", "GENE7", "GENE8", "GENE9", "GENE10"),
++   ENTREZID = paste0("ID_", 1:10),
++   stringsAsFactors = FALSE
++ )
+> rownames(feature_data) <- rownames(expr_matrix)
+> 
+> # Create phenotype data
+> pheno_data <- data.frame(
++   condition = rep(c("control", "treatment"), each = 5),
++   stringsAsFactors = FALSE
++ )
+> rownames(pheno_data) <- colnames(expr_matrix)
+> 
+> # Create ExpressionSet
+> eset <- ExpressionSet(
++   assayData = expr_matrix,
++   phenoData = AnnotatedDataFrame(pheno_data),
++   featureData = AnnotatedDataFrame(feature_data)
++ )
+> 
+> # Extract gene names using different methods
+> probe_ids <- extract_gene_names(eset)  # Default: featureNames
+> gene_symbols <- extract_gene_names(eset, id_type = "SYMBOL")
+> entrez_ids <- extract_gene_names(eset, id_type = "ENTREZID")
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:Biobase', 'package:BiocGenerics'
+
+> nameEx("gap_statistic")
+> ### * gap_statistic
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gap_statistic
+> ### Title: Compute Gap Statistic using k-means
+> ### Aliases: gap_statistic
+> 
+> ### ** Examples
+> 
+> # Load required package
+> library(cluster)
+> 
+> # Create sample data with natural clustering structure
+> set.seed(789)
+> # Three natural clusters
+> cluster1 <- matrix(rnorm(60, mean = 0, sd = 0.5), nrow = 15, ncol = 4)
+> cluster2 <- matrix(rnorm(60, mean = 2, sd = 0.5), nrow = 15, ncol = 4)
+> cluster3 <- matrix(rnorm(60, mean = -1.5, sd = 0.5), nrow = 15, ncol = 4)
+> 
+> data <- rbind(cluster1, cluster2, cluster3)
+> rownames(data) <- paste0("Gene", 1:45)
+> colnames(data) <- paste0("Sample", 1:4)
+> 
+> # Compute gap statistic
+> gap_result <- gap_statistic(data, max_k = 8, B = 10)
+> 
+> # View results
+> print(gap_result)
+      logW   E.logW         gap     SE.sim
+1 3.720549 3.652352 -0.06819683 0.06900393
+2 3.070714 3.151056  0.08034211 0.03928295
+3 2.637681 2.930556  0.29287502 0.03619056
+4 2.553927 2.813675  0.25974832 0.04688442
+5 2.464190 2.721753  0.25756329 0.03611276
+6 2.381986 2.650354  0.26836770 0.05773560
+7 2.365000 2.561187  0.19618691 0.05473379
+8 2.246636 2.504880  0.25824371 0.05842786
+> 
+> # Find optimal k (first local maximum)
+> optimal_k <- which.max(gap_result$gap)
+> message(paste("Suggested optimal k: ", optimal_k))
+Suggested optimal k:  3
+> 
+> # Plot gap statistic
+> plot(1:nrow(gap_result), gap_result$gap, type = "b",
++      xlab = "Number of clusters (k)", ylab = "Gap statistic",
++      main = "Gap Statistic for Optimal k")
+> abline(v = optimal_k, col = "red", lty = 2)
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:cluster'
+
+> nameEx("gap_statistic_parallel")
+> ### * gap_statistic_parallel
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gap_statistic_parallel
+> ### Title: Parallel Gap Statistic Computation
+> ### Aliases: gap_statistic_parallel
+> 
+> ### ** Examples
+> 
+> # Load required packages
+> library(cluster)
+> library(BiocParallel)
+> 
+> # Create larger sample dataset for parallel processing demonstration
+> set.seed(999)
+> # Create 4 natural clusters with more samples
+> n_genes <- 200
+> n_samples <- 20
+> 
+> cluster1 <- matrix(rnorm(n_genes/4 * n_samples, mean = 0), 
++                   nrow = n_genes/4, ncol = n_samples)
+> cluster2 <- matrix(rnorm(n_genes/4 * n_samples, mean = 2), 
++                   nrow = n_genes/4, ncol = n_samples)
+> cluster3 <- matrix(rnorm(n_genes/4 * n_samples, mean = -2), 
++                   nrow = n_genes/4, ncol = n_samples)
+> cluster4 <- matrix(rnorm(n_genes/4 * n_samples, mean = 1.5), 
++                   nrow = n_genes/4, ncol = n_samples)
+> 
+> large_data <- rbind(cluster1, cluster2, cluster3, cluster4)
+> rownames(large_data) <- paste0("Gene", 1:n_genes)
+> colnames(large_data) <- paste0("Sample", 1:n_samples)
+> 
+> # Set up parallel backend (adjust workers based on your system)
+> param <- MulticoreParam(workers = 2)  # Use 2 cores
+Warning in MulticoreParam(workers = 2) :
+  MulticoreParam() not supported on Windows, use SnowParam()
+> 
+> # Compute gap statistic in parallel
+> system.time({
++   gap_parallel_result <- gap_statistic_parallel(
++     large_data, 
++     max_k = 8, 
++     B = 50,  # More bootstrap samples
++     BPPARAM = param
++   )
++ })
+   user  system elapsed 
+   1.70    0.02    1.73 
+> 
+> # View results
+> print(gap_parallel_result)
+  k       gap         sk     logW  logW_ref
+1 1 0.6065603 0.01424661 9.528075 10.134635
+2 2 1.3641855 0.01412738 8.707663 10.071848
+3 3 1.7114010 0.01434402 8.313888 10.025289
+4 4 1.7258579 0.01428571 8.261160  9.987018
+5 5 1.7210468 0.01429341 8.232864  9.953911
+6 6 1.7166523 0.01495311 8.208311  9.924963
+7 7 1.7161587 0.01491754 8.182410  9.898569
+8 8 1.7165342 0.01499075 8.157213  9.873747
+> 
+> # Compare with sequential version timing
+> system.time({
++   gap_sequential_result <- gap_statistic(large_data, max_k = 8, B = 50)
++ })
+   user  system elapsed 
+   0.84    0.02    0.88 
+> 
+> # Plot comparison
+> plot(1:nrow(gap_parallel_result), gap_parallel_result$gap, type = "b",
++      xlab = "Number of clusters (k)", ylab = "Gap statistic",
++      main = "Parallel Gap Statistic Results", col = "blue")
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:BiocParallel', 'package:cluster'
+
+> nameEx("get_cluster_results")
+> ### * get_cluster_results
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: get_cluster_results
+> ### Title: Get Detailed Results for Specific Cluster
+> ### Aliases: get_cluster_results
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Get results for specific cluster
+> ##D cluster1_results <- get_cluster_results(ora_results, cluster_id = 1)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("hierarchical_cluster")
+> ### * hierarchical_cluster
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: hierarchical_cluster
+> ### Title: Hierarchical clustering of genes or samples
+> ### Aliases: hierarchical_cluster
+> 
+> ### ** Examples
+> 
+> # Load required libraries
+> library(Biobase)
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, aperm, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, saveRDS, setdiff, table,
+    tapply, union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+> 
+> # Create sample ExpressionSet
+> set.seed(123)
+> expr_matrix <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+> rownames(expr_matrix) <- paste0("Gene_", 1:100)
+> colnames(expr_matrix) <- paste0("Sample_", 1:10)
+> eset <- ExpressionSet(assayData = expr_matrix)
+> 
+> # Hierarchical clustering of genes
+> hc_genes <- hierarchical_cluster(eset, target = "gene")
+> plot(hc_genes, main = "Gene Clustering")
+> 
+> # Hierarchical clustering of samples
+> hc_samples <- hierarchical_cluster(eset, target = "sample", 
++                                   hclust_method = "complete")
+> plot(hc_samples, main = "Sample Clustering")
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:Biobase', 'package:BiocGenerics'
+
+> nameEx("kmeans_cluster")
+> ### * kmeans_cluster
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: kmeans_cluster
+> ### Title: K-means clustering of genes or samples
+> ### Aliases: kmeans_cluster
+> 
+> ### ** Examples
+> 
+> # K-means clustering of genes into 5 clusters
+> data(eset)
+> km_genes <- kmeans_cluster(eset, k = 5, target = "gene")
+> table(km_genes$cluster)
+
+1 2 3 4 5 
+1 2 2 1 4 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("kmeans_parallel_k")
+> ### * kmeans_parallel_k
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: kmeans_parallel_k
+> ### Title: Parallel K-means with Multiple K Values
+> ### Aliases: kmeans_parallel_k
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Parallel k-means for multiple k values on genes
+> library(BiocParallel)
+> results <- kmeans_parallel_k(eset, k_range = 2:8, target = "gene")
+> 
+> # Extract results for k=5
+> k5_result <- results$k_5
+> table(k5_result$cluster)
+
+1 2 3 4 5 
+2 2 4 1 1 
+> 
+> # Compare total within-cluster sum of squares across k values
+> sapply(results, function(x) x$tot.withinss)
+      k_2       k_3       k_4       k_5       k_6       k_7       k_8 
+649.23810 443.08333 335.41667 242.25000 158.75000  94.33333  48.50000 
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:BiocParallel'
+
+> nameEx("load_gmt_gene_sets")
+> ### * load_gmt_gene_sets
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: load_gmt_gene_sets
+> ### Title: Load Gene Sets from GMT File
+> ### Aliases: load_gmt_gene_sets
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Load gene sets from GMT file
+> ##D gene_sets <- load_gmt_gene_sets("pathways.gmt")
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("load_online_gene_sets")
+> ### * load_online_gene_sets
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: load_online_gene_sets
+> ### Title: Load Gene Sets from Online Databases
+> ### Aliases: load_online_gene_sets
+> 
+> ### ** Examples
+> 
+> # Get Hallmark pathways for human
+> hallmark_sets <- load_online_gene_sets("Homo sapiens", "H")
+Fetching gene sets from MSigDB for Homo sapiens collection H...
+
+Loaded 50 gene sets (filtered from 50)
+> # Load Hallmark pathways for human
+> hallmark_sets <- load_online_gene_sets("Homo sapiens", "H")
+Fetching gene sets from MSigDB for Homo sapiens collection H...
+
+Loaded 50 gene sets (filtered from 50)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("normalize_data")
+> ### * normalize_data
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: normalize_data
+> ### Title: Normalize expression data in an ExpressionSet with optional
+> ###   batch correction and filtering
+> ### Aliases: normalize_data
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Log2 normalization
+> eset_log2 <- normalize_data(eset, method = "log2")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ora_from_expression_set")
+> ### * ora_from_expression_set
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ora_from_expression_set
+> ### Title: Perform ORA Analysis from ExpressionSet and Clusters
+> ### Aliases: ora_from_expression_set
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # ORA analysis from ExpressionSet
+> ##D ora_results <- ora_from_expression_set(eset, clusters, gene_sets)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("perform_ora")
+> ### * perform_ora
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: perform_ora
+> ### Title: Perform Over-Representation Analysis (ORA) for Gene Clusters
+> ### Aliases: perform_ora
+> 
+> ### ** Examples
+> 
+> # Basic ORA analysis
+> clusters <- c(1, 1, 2, 2, 3, 3, 1, 2)
+> names(clusters) <- c("GENE1", "GENE2", "GENE3", "GENE4", "GENE5", 
++                      "GENE6", "GENE7", "GENE8")
+> gene_sets <- list(
++   Pathway1 = c("GENE1", "GENE2", "GENE7", "GENE9", "GENE10"),
++   Pathway2 = c("GENE3", "GENE4", "GENE8", "GENE11", "GENE12")
++ )
+> ora_results <- perform_ora(clusters, gene_sets)
+Universe not provided. Using 12 unique genes from clusters and gene sets.
+Filtered gene sets: 2 -> 2 (min size: 5, max size: 500)
+
+Analyzing 3 clusters...
+
+Processing cluster 1...
+ Found 1 pathways tested, 1 significant.
+
+Processing cluster 2...
+ Found 1 pathways tested, 1 significant.
+
+Processing cluster 3...
+ No pathways with overlapping genes found.
+
+ORA analysis completed.
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("perform_ora_parallel")
+> ### * perform_ora_parallel
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: perform_ora_parallel
+> ### Title: Parallel Over-Representation Analysis (ORA) for Gene Clusters
+> ### Aliases: perform_ora_parallel
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Parallel ORA analysis
+> ##D ora_results <- perform_ora_parallel(clusters, gene_sets)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_cluster_profiles")
+> ### * plot_cluster_profiles
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_cluster_profiles
+> ### Title: Plot average gene expression profiles per cluster
+> ### Aliases: plot_cluster_profiles
+> 
+> ### ** Examples
+> 
+> expr_matrix <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+> colnames(expr_matrix) <- paste0("Sample", 1:10)
+> rownames(expr_matrix) <- paste0("Gene", 1:100)
+> eset <- Biobase::ExpressionSet(assayData = expr_matrix)
+> clusters <- kmeans(expr_matrix, centers = 3)$cluster
+> plot_cluster_profiles(eset, clusters, scale = TRUE)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_dbscan_results")
+> ### * plot_dbscan_results
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_dbscan_results
+> ### Title: Plot DBSCAN clustering results using PCA
+> ### Aliases: plot_dbscan_results
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Plot DBSCAN clustering results for genes
+> cluster_results <- c(1, 1, 2, 0, 2, 3)  # Example cluster assignments
+> names(cluster_results) <- rownames(eset)[1:6]
+> plot_dbscan_results(eset, cluster_results, target = "gene")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_dendrogram")
+> ### * plot_dendrogram
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_dendrogram
+> ### Title: Plot dendrogram from hierarchical clustering model
+> ### Aliases: plot_dendrogram
+> 
+> ### ** Examples
+> 
+> expr_matrix <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+> colnames(expr_matrix) <- paste0("Sample", 1:10)
+> rownames(expr_matrix) <- paste0("Gene", 1:100)
+> eset <- Biobase::ExpressionSet(assayData = expr_matrix)
+> hc <- hclust(dist(Biobase::exprs(eset)))
+> p <- plot_dendrogram(hc)
+> message(p)
+list()list(<environment>, <environment>)<environment><environment>list()list(line = list(colour = "black", linewidth = 0.5, linetype = 1, lineend = "butt", arrow = FALSE, inherit.blank = TRUE), rect = list(fill = "white", colour = "black", linewidth = 0.5, linetype = 1, inherit.blank = TRUE), text = list(family = "", face = "plain", colour = "black", size = 11, hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 0.9, margin = c(0, 0, 0, 0), debug = FALSE, inherit.blank = TRUE), title = NULL, aspect.ratio = NULL, axis.title = NULL, axis.title.x = list(family = NULL, face = NULL, 
+    colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = NULL, lineheight = NULL, margin = c(2.75, 0, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.75, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.bottom = NULL, axis.title.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = 90, lineheight = NULL, 
+    margin = c(0, 2.75, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.y.left = NULL, axis.title.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = -90, lineheight = NULL, margin = c(0, 0, 0, 2.75), debug = NULL, inherit.blank = TRUE), axis.text = list(family = NULL, face = NULL, colour = "grey30", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), axis.text.x = list(), 
+    axis.text.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.2, 0), debug = NULL, inherit.blank = TRUE), axis.text.x.bottom = NULL, axis.text.y = list(), axis.text.y.left = NULL, axis.text.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 0, 0, 2.2), debug = NULL, inherit.blank = TRUE), axis.text.theta = NULL, 
+    axis.text.r = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0.5, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 2.2, 0, 2.2), debug = NULL, inherit.blank = TRUE), axis.ticks = list(), axis.ticks.x = NULL, axis.ticks.x.top = NULL, axis.ticks.x.bottom = NULL, axis.ticks.y = NULL, axis.ticks.y.left = NULL, axis.ticks.y.right = NULL, axis.ticks.theta = NULL, axis.ticks.r = NULL, axis.minor.ticks.x.top = NULL, axis.minor.ticks.x.bottom = NULL, axis.minor.ticks.y.left = NULL, 
+    axis.minor.ticks.y.right = NULL, axis.minor.ticks.theta = NULL, axis.minor.ticks.r = NULL, axis.ticks.length = 2.75, axis.ticks.length.x = NULL, axis.ticks.length.x.top = NULL, axis.ticks.length.x.bottom = NULL, axis.ticks.length.y = NULL, axis.ticks.length.y.left = NULL, axis.ticks.length.y.right = NULL, axis.ticks.length.theta = NULL, axis.ticks.length.r = NULL, axis.minor.ticks.length = 0.75, axis.minor.ticks.length.x = NULL, axis.minor.ticks.length.x.top = NULL, axis.minor.ticks.length.x.bottom = NULL, 
+    axis.minor.ticks.length.y = NULL, axis.minor.ticks.length.y.left = NULL, axis.minor.ticks.length.y.right = NULL, axis.minor.ticks.length.theta = NULL, axis.minor.ticks.length.r = NULL, axis.line = list(), axis.line.x = NULL, axis.line.x.top = NULL, axis.line.x.bottom = NULL, axis.line.y = NULL, axis.line.y.left = NULL, axis.line.y.right = NULL, axis.line.theta = NULL, axis.line.r = NULL, legend.background = list(), legend.margin = c(5.5, 5.5, 5.5, 5.5), legend.spacing = 11, legend.spacing.x = NULL, 
+    legend.spacing.y = NULL, legend.key = list(), legend.key.size = 1.2, legend.key.height = NULL, legend.key.width = NULL, legend.key.spacing = 5.5, legend.key.spacing.x = NULL, legend.key.spacing.y = NULL, legend.frame = NULL, legend.ticks = NULL, legend.ticks.length = 0.2, legend.axis.line = NULL, legend.text = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), legend.text.position = NULL, 
+    legend.title = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), legend.title.position = NULL, legend.position = "right", legend.position.inside = NULL, legend.direction = NULL, legend.byrow = NULL, legend.justification = "center", legend.justification.top = NULL, legend.justification.bottom = NULL, legend.justification.left = NULL, legend.justification.right = NULL, legend.justification.inside = NULL, 
+    legend.location = NULL, legend.box = NULL, legend.box.just = NULL, legend.box.margin = c(0, 0, 0, 0), legend.box.background = list(), legend.box.spacing = 11, panel.background = list(), panel.border = list(), panel.spacing = 5.5, panel.spacing.x = NULL, panel.spacing.y = NULL, panel.grid = list(), panel.grid.major = NULL, panel.grid.minor = list(colour = NULL, linewidth = 0.5, linetype = NULL, lineend = NULL, arrow = FALSE, inherit.blank = TRUE), panel.grid.major.x = NULL, panel.grid.major.y = NULL, 
+    panel.grid.minor.x = NULL, panel.grid.minor.y = NULL, panel.ontop = FALSE, plot.background = list(), plot.title = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), plot.title.position = "panel", plot.subtitle = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), 
+    plot.caption = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = 1, vjust = 1, angle = NULL, lineheight = NULL, margin = c(5.5, 0, 0, 0), debug = NULL, inherit.blank = TRUE), plot.caption.position = "panel", plot.tag = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0.5, vjust = 0.5, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), plot.tag.position = "topleft", plot.tag.location = NULL, plot.margin = c(5.5, 5.5, 5.5, 5.5
+    ), strip.background = list(), strip.background.x = NULL, strip.background.y = NULL, strip.clip = "inherit", strip.placement = "inside", strip.text = list(family = NULL, face = NULL, colour = "grey10", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(4.4, 4.4, 4.4, 4.4), debug = NULL, inherit.blank = TRUE), strip.text.x = NULL, strip.text.x.bottom = NULL, strip.text.x.top = NULL, strip.text.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, 
+        vjust = NULL, angle = -90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.left = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = NULL, angle = 90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.right = NULL, strip.switch.pad.grid = 2.75, strip.switch.pad.wrap = 2.75)<environment><environment><environment><environment>list(title = "Hierarchical Clustering Dendrogram", x = "x", y = "y", xend = "xend", yend = "yend")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_elbow")
+> ### * plot_elbow
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_elbow
+> ### Title: Elbow plot for selecting number of clusters in k-means
+> ### Aliases: plot_elbow
+> 
+> ### ** Examples
+> 
+> data(eset)
+> # Generate elbow plot for gene clustering
+> elbow_plot <- plot_elbow(eset, max_k = 9, target = "gene")
+> message(elbow_plot)
+list(k = 1:9, WSS = c(895.5, 568.380952380952, 444.214285714286, 327.416666666667, 236.333333333333, 157, 92.5, 52, 22.5))list(<environment>, <environment>)<environment><environment>list(x = ~k, y = ~WSS)list(line = list(colour = "black", linewidth = 0.5, linetype = 1, lineend = "butt", arrow = FALSE, inherit.blank = TRUE), rect = list(fill = "white", colour = "black", linewidth = 0.5, linetype = 1, inherit.blank = TRUE), text = list(family = "", face = "plain", colour = "black", size = 11, hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 0.9, margin = c(0, 0, 0, 0), debug = FALSE, inherit.blank = TRUE), title = NULL, aspect.ratio = NULL, axis.title = NULL, axis.title.x = list(family = NULL, face = NULL, 
+    colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = NULL, lineheight = NULL, margin = c(2.75, 0, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.75, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.bottom = NULL, axis.title.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = 90, lineheight = NULL, 
+    margin = c(0, 2.75, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.y.left = NULL, axis.title.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = -90, lineheight = NULL, margin = c(0, 0, 0, 2.75), debug = NULL, inherit.blank = TRUE), axis.text = list(family = NULL, face = NULL, colour = "grey30", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), axis.text.x = list(
+    family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = NULL, lineheight = NULL, margin = c(2.2, 0, 0, 0), debug = NULL, inherit.blank = TRUE), axis.text.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.2, 0), debug = NULL, inherit.blank = TRUE), axis.text.x.bottom = NULL, axis.text.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 1, vjust = NULL, 
+    angle = NULL, lineheight = NULL, margin = c(0, 2.2, 0, 0), debug = NULL, inherit.blank = TRUE), axis.text.y.left = NULL, axis.text.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 0, 0, 2.2), debug = NULL, inherit.blank = TRUE), axis.text.theta = NULL, axis.text.r = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0.5, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 2.2, 
+0, 2.2), debug = NULL, inherit.blank = TRUE), axis.ticks = list(), axis.ticks.x = NULL, axis.ticks.x.top = NULL, axis.ticks.x.bottom = NULL, axis.ticks.y = NULL, axis.ticks.y.left = NULL, axis.ticks.y.right = NULL, axis.ticks.theta = NULL, axis.ticks.r = NULL, axis.minor.ticks.x.top = NULL, axis.minor.ticks.x.bottom = NULL, axis.minor.ticks.y.left = NULL, axis.minor.ticks.y.right = NULL, axis.minor.ticks.theta = NULL, axis.minor.ticks.r = NULL, axis.ticks.length = 2.75, axis.ticks.length.x = NULL, 
+    axis.ticks.length.x.top = NULL, axis.ticks.length.x.bottom = NULL, axis.ticks.length.y = NULL, axis.ticks.length.y.left = NULL, axis.ticks.length.y.right = NULL, axis.ticks.length.theta = NULL, axis.ticks.length.r = NULL, axis.minor.ticks.length = 0.75, axis.minor.ticks.length.x = NULL, axis.minor.ticks.length.x.top = NULL, axis.minor.ticks.length.x.bottom = NULL, axis.minor.ticks.length.y = NULL, axis.minor.ticks.length.y.left = NULL, axis.minor.ticks.length.y.right = NULL, axis.minor.ticks.length.theta = NULL, 
+    axis.minor.ticks.length.r = NULL, axis.line = list(), axis.line.x = NULL, axis.line.x.top = NULL, axis.line.x.bottom = NULL, axis.line.y = NULL, axis.line.y.left = NULL, axis.line.y.right = NULL, axis.line.theta = NULL, axis.line.r = NULL, legend.background = list(), legend.margin = c(5.5, 5.5, 5.5, 5.5), legend.spacing = 11, legend.spacing.x = NULL, legend.spacing.y = NULL, legend.key = list(), legend.key.size = 1.2, legend.key.height = NULL, legend.key.width = NULL, legend.key.spacing = 5.5, 
+    legend.key.spacing.x = NULL, legend.key.spacing.y = NULL, legend.frame = NULL, legend.ticks = NULL, legend.ticks.length = 0.2, legend.axis.line = NULL, legend.text = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), legend.text.position = NULL, legend.title = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, 
+        margin = NULL, debug = NULL, inherit.blank = TRUE), legend.title.position = NULL, legend.position = "right", legend.position.inside = NULL, legend.direction = NULL, legend.byrow = NULL, legend.justification = "center", legend.justification.top = NULL, legend.justification.bottom = NULL, legend.justification.left = NULL, legend.justification.right = NULL, legend.justification.inside = NULL, legend.location = NULL, legend.box = NULL, legend.box.just = NULL, legend.box.margin = c(0, 0, 0, 0), 
+    legend.box.background = list(), legend.box.spacing = 11, panel.background = list(), panel.border = list(), panel.spacing = 5.5, panel.spacing.x = NULL, panel.spacing.y = NULL, panel.grid = list(colour = "grey92", linewidth = NULL, linetype = NULL, lineend = NULL, arrow = FALSE, inherit.blank = TRUE), panel.grid.major = NULL, panel.grid.minor = list(colour = NULL, linewidth = 0.5, linetype = NULL, lineend = NULL, arrow = FALSE, inherit.blank = TRUE), panel.grid.major.x = NULL, panel.grid.major.y = NULL, 
+    panel.grid.minor.x = NULL, panel.grid.minor.y = NULL, panel.ontop = FALSE, plot.background = list(), plot.title = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), plot.title.position = "panel", plot.subtitle = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), 
+    plot.caption = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = 1, vjust = 1, angle = NULL, lineheight = NULL, margin = c(5.5, 0, 0, 0), debug = NULL, inherit.blank = TRUE), plot.caption.position = "panel", plot.tag = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0.5, vjust = 0.5, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), plot.tag.position = "topleft", plot.tag.location = NULL, plot.margin = c(5.5, 5.5, 5.5, 5.5
+    ), strip.background = list(), strip.background.x = NULL, strip.background.y = NULL, strip.clip = "inherit", strip.placement = "inside", strip.text = list(family = NULL, face = NULL, colour = "grey10", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(4.4, 4.4, 4.4, 4.4), debug = NULL, inherit.blank = TRUE), strip.text.x = NULL, strip.text.x.bottom = NULL, strip.text.x.top = NULL, strip.text.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, 
+        vjust = NULL, angle = -90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.left = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = NULL, angle = 90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.right = NULL, strip.switch.pad.grid = 2.75, strip.switch.pad.wrap = 2.75)<environment><environment><environment><environment>list(x = "Number of Clusters", y = "Within-Cluster SS", title = "Elbow Method for Optimal k")
+> 
+> # Generate elbow plot for sample clustering
+> elbow_plot_samples <- plot_elbow(eset, max_k = 8, target = "sample")
+> message(elbow_plot_samples)
+list(k = 1:8, WSS = c(936.7, 649.238095238095, 443.083333333333, 335.416666666667, 242.25, 158.75, 94.3333333333333, 48.5))list(<environment>, <environment>)<environment><environment>list(x = ~k, y = ~WSS)list(line = list(colour = "black", linewidth = 0.5, linetype = 1, lineend = "butt", arrow = FALSE, inherit.blank = TRUE), rect = list(fill = "white", colour = "black", linewidth = 0.5, linetype = 1, inherit.blank = TRUE), text = list(family = "", face = "plain", colour = "black", size = 11, hjust = 0.5, vjust = 0.5, angle = 0, lineheight = 0.9, margin = c(0, 0, 0, 0), debug = FALSE, inherit.blank = TRUE), title = NULL, aspect.ratio = NULL, axis.title = NULL, axis.title.x = list(family = NULL, face = NULL, 
+    colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = NULL, lineheight = NULL, margin = c(2.75, 0, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.75, 0), debug = NULL, inherit.blank = TRUE), axis.title.x.bottom = NULL, axis.title.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = 90, lineheight = NULL, 
+    margin = c(0, 2.75, 0, 0), debug = NULL, inherit.blank = TRUE), axis.title.y.left = NULL, axis.title.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = -90, lineheight = NULL, margin = c(0, 0, 0, 2.75), debug = NULL, inherit.blank = TRUE), axis.text = list(family = NULL, face = NULL, colour = "grey30", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), axis.text.x = list(
+    family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 1, angle = NULL, lineheight = NULL, margin = c(2.2, 0, 0, 0), debug = NULL, inherit.blank = TRUE), axis.text.x.top = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = 0, angle = NULL, lineheight = NULL, margin = c(0, 0, 2.2, 0), debug = NULL, inherit.blank = TRUE), axis.text.x.bottom = NULL, axis.text.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 1, vjust = NULL, 
+    angle = NULL, lineheight = NULL, margin = c(0, 2.2, 0, 0), debug = NULL, inherit.blank = TRUE), axis.text.y.left = NULL, axis.text.y.right = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 0, 0, 2.2), debug = NULL, inherit.blank = TRUE), axis.text.theta = NULL, axis.text.r = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0.5, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(0, 2.2, 
+0, 2.2), debug = NULL, inherit.blank = TRUE), axis.ticks = list(), axis.ticks.x = NULL, axis.ticks.x.top = NULL, axis.ticks.x.bottom = NULL, axis.ticks.y = NULL, axis.ticks.y.left = NULL, axis.ticks.y.right = NULL, axis.ticks.theta = NULL, axis.ticks.r = NULL, axis.minor.ticks.x.top = NULL, axis.minor.ticks.x.bottom = NULL, axis.minor.ticks.y.left = NULL, axis.minor.ticks.y.right = NULL, axis.minor.ticks.theta = NULL, axis.minor.ticks.r = NULL, axis.ticks.length = 2.75, axis.ticks.length.x = NULL, 
+    axis.ticks.length.x.top = NULL, axis.ticks.length.x.bottom = NULL, axis.ticks.length.y = NULL, axis.ticks.length.y.left = NULL, axis.ticks.length.y.right = NULL, axis.ticks.length.theta = NULL, axis.ticks.length.r = NULL, axis.minor.ticks.length = 0.75, axis.minor.ticks.length.x = NULL, axis.minor.ticks.length.x.top = NULL, axis.minor.ticks.length.x.bottom = NULL, axis.minor.ticks.length.y = NULL, axis.minor.ticks.length.y.left = NULL, axis.minor.ticks.length.y.right = NULL, axis.minor.ticks.length.theta = NULL, 
+    axis.minor.ticks.length.r = NULL, axis.line = list(), axis.line.x = NULL, axis.line.x.top = NULL, axis.line.x.bottom = NULL, axis.line.y = NULL, axis.line.y.left = NULL, axis.line.y.right = NULL, axis.line.theta = NULL, axis.line.r = NULL, legend.background = list(), legend.margin = c(5.5, 5.5, 5.5, 5.5), legend.spacing = 11, legend.spacing.x = NULL, legend.spacing.y = NULL, legend.key = list(), legend.key.size = 1.2, legend.key.height = NULL, legend.key.width = NULL, legend.key.spacing = 5.5, 
+    legend.key.spacing.x = NULL, legend.key.spacing.y = NULL, legend.frame = NULL, legend.ticks = NULL, legend.ticks.length = 0.2, legend.axis.line = NULL, legend.text = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), legend.text.position = NULL, legend.title = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = NULL, angle = NULL, lineheight = NULL, 
+        margin = NULL, debug = NULL, inherit.blank = TRUE), legend.title.position = NULL, legend.position = "right", legend.position.inside = NULL, legend.direction = NULL, legend.byrow = NULL, legend.justification = "center", legend.justification.top = NULL, legend.justification.bottom = NULL, legend.justification.left = NULL, legend.justification.right = NULL, legend.justification.inside = NULL, legend.location = NULL, legend.box = NULL, legend.box.just = NULL, legend.box.margin = c(0, 0, 0, 0), 
+    legend.box.background = list(), legend.box.spacing = 11, panel.background = list(), panel.border = list(), panel.spacing = 5.5, panel.spacing.x = NULL, panel.spacing.y = NULL, panel.grid = list(colour = "grey92", linewidth = NULL, linetype = NULL, lineend = NULL, arrow = FALSE, inherit.blank = TRUE), panel.grid.major = NULL, panel.grid.minor = list(colour = NULL, linewidth = 0.5, linetype = NULL, lineend = NULL, arrow = FALSE, inherit.blank = TRUE), panel.grid.major.x = NULL, panel.grid.major.y = NULL, 
+    panel.grid.minor.x = NULL, panel.grid.minor.y = NULL, panel.ontop = FALSE, plot.background = list(), plot.title = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), plot.title.position = "panel", plot.subtitle = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = 0, vjust = 1, angle = NULL, lineheight = NULL, margin = c(0, 0, 5.5, 0), debug = NULL, inherit.blank = TRUE), 
+    plot.caption = list(family = NULL, face = NULL, colour = NULL, size = 0.8, hjust = 1, vjust = 1, angle = NULL, lineheight = NULL, margin = c(5.5, 0, 0, 0), debug = NULL, inherit.blank = TRUE), plot.caption.position = "panel", plot.tag = list(family = NULL, face = NULL, colour = NULL, size = 1.2, hjust = 0.5, vjust = 0.5, angle = NULL, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), plot.tag.position = "topleft", plot.tag.location = NULL, plot.margin = c(5.5, 5.5, 5.5, 5.5
+    ), strip.background = list(), strip.background.x = NULL, strip.background.y = NULL, strip.clip = "inherit", strip.placement = "inside", strip.text = list(family = NULL, face = NULL, colour = "grey10", size = 0.8, hjust = NULL, vjust = NULL, angle = NULL, lineheight = NULL, margin = c(4.4, 4.4, 4.4, 4.4), debug = NULL, inherit.blank = TRUE), strip.text.x = NULL, strip.text.x.bottom = NULL, strip.text.x.top = NULL, strip.text.y = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, 
+        vjust = NULL, angle = -90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.left = list(family = NULL, face = NULL, colour = NULL, size = NULL, hjust = NULL, vjust = NULL, angle = 90, lineheight = NULL, margin = NULL, debug = NULL, inherit.blank = TRUE), strip.text.y.right = NULL, strip.switch.pad.grid = 2.75, strip.switch.pad.wrap = 2.75)<environment><environment><environment><environment>list(x = "Number of Clusters", y = "Within-Cluster SS", title = "Elbow Method for Optimal k")
+> 
+> # The "elbow" in the plot suggests optimal number of clusters
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_heatmap")
+> ### * plot_heatmap
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_heatmap
+> ### Title: Plot heatmap of expression data with optional clustering
+> ###   annotation and scaling
+> ### Aliases: plot_heatmap
+> 
+> ### ** Examples
+> 
+> expr_matrix <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+> colnames(expr_matrix) <- paste0("Sample", 1:10)
+> rownames(expr_matrix) <- paste0("Gene", 1:100)
+> gene_clusters <- kmeans(expr_matrix, centers = 3)$cluster
+> eset <- Biobase::ExpressionSet(
++   assayData = expr_matrix
++ )
+> plot_heatmap(eset, clusters = gene_clusters, scale = "row")
+> 
+> 
+> 
+> cleanEx()
+> nameEx("plot_pca")
+> ### * plot_pca
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: plot_pca
+> ### Title: PCA plot of samples
+> ### Aliases: plot_pca
+> 
+> ### ** Examples
+> 
+> # Create example ExpressionSet
+> library(Biobase)
+Loading required package: BiocGenerics
+
+Attaching package: 'BiocGenerics'
+
+The following objects are masked from 'package:stats':
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from 'package:base':
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, aperm, append,
+    as.data.frame, basename, cbind, colnames, dirname, do.call,
+    duplicated, eval, evalq, get, grep, grepl, intersect, is.unsorted,
+    lapply, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, saveRDS, setdiff, table,
+    tapply, union, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+> 
+> # Expression data (genes x samples)
+> expr_data <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+> rownames(expr_data) <- paste0("Gene", 1:100)
+> colnames(expr_data) <- paste0("Sample", 1:10)
+> 
+> # Phenotype data
+> pheno_data <- data.frame(
++   sample_id = paste0("Sample", 1:10),
++   treatment = rep(c("Control", "Treated"), each = 5),
++   batch = rep(c("A", "B"), times = 5)
++ )
+> rownames(pheno_data) <- colnames(expr_data)
+> 
+> # Create ExpressionSet
+> eset <- ExpressionSet(
++   assayData = expr_data,
++   phenoData = AnnotatedDataFrame(pheno_data)
++ )
+> 
+> # Basic PCA plot
+> plot_pca(eset)
+> 
+> # PCA plot colored by treatment group with ellipses
+> plot_pca(eset, color_by = "treatment", ellipse = TRUE)
+> 
+> # PCA plot colored by batch
+> plot_pca(eset, color_by = "batch", main = "PCA by Batch")
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:Biobase', 'package:BiocGenerics'
+
+> nameEx("read_expression")
+> ### * read_expression
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read_expression
+> ### Title: Read gene expression data from file
+> ### Aliases: read_expression
+> 
+> ### ** Examples
+> 
+> # Load existing ExpressionSet from RData file
+> file_path <- system.file("data", "eset.rda", package = "GeneExprClust")
+> eset <- read_expression(file_path, type = "eset")
+> 
+> # Check the resulting ExpressionSet
+> print(eset)
+ExpressionSet (storageMode: lockedEnvironment)
+assayData: 10 features, 10 samples 
+  element names: exprs 
+protocolData: none
+phenoData
+  sampleNames: Sample1 Sample2 ... Sample10 (10 total)
+  varLabels: condition
+  varMetadata: labelDescription
+featureData: none
+experimentData: use 'experimentData(object)'
+Annotation:  
+> dim(Biobase::exprs(eset))  # Get expression matrix dimensions
+[1] 10 10
+> Biobase::pData(eset)       # Get phenotype data
+         condition
+Sample1          A
+Sample2          A
+Sample3          A
+Sample4          A
+Sample5          A
+Sample6          B
+Sample7          B
+Sample8          B
+Sample9          B
+Sample10         B
+> 
+> 
+> 
+> cleanEx()
+> nameEx("run_pipeline")
+> ### * run_pipeline
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: run_pipeline
+> ### Title: Complete Gene Expression Analysis Pipeline
+> ### Aliases: run_pipeline
+> 
+> ### ** Examples
+> 
+> data(eset)
+> results <- run_pipeline(
++   expression_set = eset,
++   clustering_methods = c("hierarchical", "kmeans"),
++   k_clusters = 4
++ )
+Created output directory: pipeline_results
+
+=== STEP 1: Loading and Initial Processing ===
+
+Using provided ExpressionSet object
+
+Loaded expression data:
+
+  Genes: 10
+  Samples: 10
+
+=== STEP 2: Normalization and Filtering ===
+
+Applying log2 normalization...
+
+After normalization and filtering:
+
+  Genes: 10
+  Samples: 10
+
+=== STEP 3: Exploratory Analysis and Outlier Detection ===
+
+2 outlier genes removed.
+Outlier detection using mad method:
+  Outliers detected: 2
+  Final dataset - Genes: 8 Samples: 10
+
+=== STEP 4: Clustering Analysis ===
+
+Running hierarchical clustering...
+  Created 4 clusters
+Running kmeans clustering...
+  Created 4 clusters
+
+=== STEP 5: Clustering Validation ===
+
+Validating hierarchical clustering...
+  Warning: Could not compute WSS - Length of cluster vector must match number of rows in data.
+  Warning: Could not compute silhouette - Length of cluster vector must match number of rows in data.
+Validating kmeans clustering...
+  Warning: Could not compute WSS - Length of cluster vector must match number of rows in data.
+  Warning: Could not compute silhouette - Length of cluster vector must match number of rows in data.
+Computing gap statistic...
+
+Warning: Could not compute gap statistic - number of cluster centres must lie between 1 and nrow(x)
+
+=== STEP 6: Creating Visualizations ===
+
+Creating PCA plot...
+
+Creating elbow plot...
+
+Warning: Could not create elbow plot - number of cluster centres must lie between 1 and nrow(x)
+Creating hierarchical heatmap...
+Creating dendrogram...
+
+Creating hierarchical cluster profiles...
+Creating kmeans heatmap...
+Creating kmeans cluster profiles...
+
+=== STEP 7: Pathway Enrichment Analysis ===
+
+Loading gene sets from MSigDB...
+
+Fetching gene sets from MSigDB for Homo sapiens collection H...
+
+Loaded 50 gene sets (filtered from 50)
+Performing enrichment analysis for hierarchical clusters...
+
+Filtered gene sets: 50 -> 0 (min size: 5, max size: 500)
+
+Warning: Enrichment analysis failed for hierarchical - No gene sets passed the size filters
+Performing enrichment analysis for kmeans clusters...
+
+Filtered gene sets: 50 -> 0 (min size: 5, max size: 500)
+
+Warning: Enrichment analysis failed for kmeans - No gene sets passed the size filters
+
+=== STEP 8: Generating Summary ===
+
+
+=== PIPELINE COMPLETED SUCCESSFULLY ===
+
+Results saved to: pipeline_results
+Total clustering methods analyzed: 2
+Enrichment analysis completed for: 0 methods
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("silhouette_score")
+> ### * silhouette_score
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: silhouette_score
+> ### Title: Compute silhouette width for clustering
+> ### Aliases: silhouette_score
+> 
+> ### ** Examples
+> 
+> # Load required packages
+> library(cluster)
+> library(proxy)
+
+Attaching package: 'proxy'
+
+The following objects are masked from 'package:stats':
+
+    as.dist, dist
+
+The following object is masked from 'package:base':
+
+    as.matrix
+
+> 
+> # Create sample data with clear clusters
+> set.seed(456)
+> data <- rbind(
++   matrix(rnorm(50, mean = 0), nrow = 10, ncol = 5),
++   matrix(rnorm(50, mean = 3), nrow = 10, ncol = 5),
++   matrix(rnorm(50, mean = -2), nrow = 10, ncol = 5)
++ )
+> rownames(data) <- paste0("Gene", 1:30)
+> 
+> # Create cluster assignments
+> clusters <- c(rep(1, 10), rep(2, 10), rep(3, 10))
+> names(clusters) <- rownames(data)
+> 
+> # Compute silhouette scores
+> sil_result <- silhouette_score(data, clusters)
+> 
+> # View summary
+> summary(sil_result)
+Silhouette of 30 units in 3 clusters from silhouette.default(x = clusters, dist = d) :
+ Cluster sizes and average silhouette widths:
+       10        10        10 
+0.4570087 0.5910403 0.4995556 
+Individual silhouette widths:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1718  0.4506  0.5308  0.5159  0.6056  0.6682 
+> 
+> # Plot silhouette
+> plot(sil_result)
+> 
+> 
+> 
+> cleanEx()
+
+detaching 'package:proxy', 'package:cluster'
+
+> nameEx("summarize_ora_results")
+> ### * summarize_ora_results
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: summarize_ora_results
+> ### Title: Summarize ORA Results
+> ### Aliases: summarize_ora_results
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Summarize ORA results
+> ##D summary_table <- summarize_ora_results(ora_results, top_n = 5)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("wss_score")
+> ### * wss_score
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: wss_score
+> ### Title: Compute Within-Cluster Sum of Squares (WSS)
+> ### Aliases: wss_score
+> 
+> ### ** Examples
+> 
+> # Create sample gene expression data
+> set.seed(123)
+> data <- matrix(rnorm(200), nrow = 20, ncol = 10)
+> rownames(data) <- paste0("Gene", 1:20)
+> colnames(data) <- paste0("Sample", 1:10)
+> 
+> # Create cluster assignments
+> clusters <- c(rep(1, 8), rep(2, 7), rep(3, 5))
+> names(clusters) <- rownames(data)
+> 
+> # Compute WSS
+> wss_result <- wss_score(data, clusters)
+> message(paste("Total WSS: ", round(wss_result, 2)))
+Total WSS:  158.65
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  56.49 2.89 129.72 NA NA 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

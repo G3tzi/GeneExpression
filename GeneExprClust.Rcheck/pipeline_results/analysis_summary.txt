@@ -1,0 +1,16 @@
+Gene Expression Analysis Pipeline Summary
+========================================
+
+Input Data:
+  - Source: provided ExpressionSet  - Type: ExpressionSet  - Original dimensions: 10 genes x 10 samples
+  - Final dimensions: 8 genes x 10 samples
+
+Processing:
+  - Normalization: log2  - Batch correction: no  - Low expression filtering: yes  - Outlier detection: mad method  - Outliers removed: 2
+
+Clustering:
+  - Methods: hierarchical, kmeans  - Target: gene  - Number of clusters: 4
+
+Validation: performedEnrichment Analysis: performed using online gene sets
+
+Output saved to: pipeline_results

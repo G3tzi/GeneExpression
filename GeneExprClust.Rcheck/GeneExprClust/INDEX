@@ -1,0 +1,48 @@
+cluster_expression      Unified clustering function with multiple
+                        methods
+create_example_gene_sets
+                        Create Simple Example Gene Sets
+dbscan_cluster          Cluster genes using DBSCAN
+detect_outliers         Detect and optionally remove outlier genes
+                        based on variability
+eset                    Example Expression Set
+extract_gene_names      Extract Gene Names from ExpressionSet
+filter_low_expression   Filter low-expressed genes from expression
+                        matrix and ExpressionSet
+gap_statistic           Compute Gap Statistic using k-means
+gap_statistic_parallel
+                        Parallel Gap Statistic Computation
+get_cluster_results     Get Detailed Results for Specific Cluster
+hierarchical_cluster    Hierarchical clustering of genes or samples
+kmeans_cluster          K-means clustering of genes or samples
+kmeans_parallel_k       Parallel K-means with Multiple K Values
+load_gmt_gene_sets      Load Gene Sets from GMT File
+load_online_gene_sets   Load Gene Sets from Online Databases
+normalize_data          Normalize expression data in an ExpressionSet
+                        with optional batch correction and filtering
+ora_from_expression_set
+                        Perform ORA Analysis from ExpressionSet and
+                        Clusters
+perform_batch_correction
+                        Perform batch correction on expression matrix
+                        using ComBat
+perform_normalization   Perform normalization on an expression matrix
+perform_ora             Perform Over-Representation Analysis (ORA) for
+                        Gene Clusters
+perform_ora_parallel    Parallel Over-Representation Analysis (ORA) for
+                        Gene Clusters
+plot_cluster_profiles   Plot average gene expression profiles per
+                        cluster
+plot_dbscan_results     Plot DBSCAN clustering results using PCA
+plot_dendrogram         Plot dendrogram from hierarchical clustering
+                        model
+plot_elbow              Elbow plot for selecting number of clusters in
+                        k-means
+plot_heatmap            Plot heatmap of expression data with optional
+                        clustering annotation and scaling
+plot_pca                PCA plot of samples
+read_expression         Read gene expression data from file
+run_pipeline            Complete Gene Expression Analysis Pipeline
+silhouette_score        Compute silhouette width for clustering
+summarize_ora_results   Summarize ORA Results
+wss_score               Compute Within-Cluster Sum of Squares (WSS)

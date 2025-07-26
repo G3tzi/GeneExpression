@@ -1,0 +1,30 @@
+Package: GeneExprClust
+Type: Package
+Title: Gene Expression Clustering and Enrichment Analysis
+Version: 0.1.0
+Authors@R: 
+    person("Gabriele", "Ghezzi", email = "ghezzigabriele080@gmail.com", role = c("aut", "cre"))
+Description: 
+    Provides functions for reading, normalizing, clustering gene expression data,
+    performing gene set enrichment analysis (GSEA), and visualization. Supports multiple
+    clustering algorithms (hierarchical, k-means, DBSCAN), normalization methods 
+    (log2, quantile, z-score, DESeq2), and integrates with clusterProfiler for enrichment.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: BiocParallel, ggdendro, Biobase, dbscan, ggplot2,
+        preprocessCore, DESeq2, sva, reshape2, ComplexHeatmap,
+        matrixStats, stats, proxy, cluster, msigdbr, scales, stringr
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown, mockery, ALL, dplyr,
+        mclust, org.Hs.eg.db
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+biocViews: Clustering, GeneExpression, Transcriptomics
+URL: notavailable
+BugReports: notavailable
+Depends: R (>= 4.4.0)
+NeedsCompilation: no
+Packaged: 2025-06-08 10:35:43 UTC; ghezz
+Author: Gabriele Ghezzi [aut, cre]
+Maintainer: Gabriele Ghezzi <ghezzigabriele080@gmail.com>
+Built: R 4.4.2; ; 2025-06-08 12:12:34 UTC; windows

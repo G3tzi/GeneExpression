@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Automated Gene Expression Analysis Pipeline: Real-World Application</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Automated Gene Expression Analysis
+Pipeline: Real-World Application</h1>
+
+
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>This vignette demonstrates the power of the automated
+<code>run_pipeline()</code> function using a real-world gene expression
+dataset. Unlike the manual step-by-step approach shown in the first
+vignette, this automated pipeline provides a comprehensive analysis with
+a single function call, making it ideal for:</p>
+<ul>
+<li><strong>Quick exploratory analysis</strong> of new datasets</li>
+<li><strong>Standardized workflows</strong> across multiple
+projects<br />
+</li>
+<li><strong>Reproducible research</strong> with consistent
+parameters</li>
+<li><strong>Batch processing</strong> of multiple datasets</li>
+</ul>
+<p>We’ll analyze a time-course gene expression dataset from a cancer
+study, demonstrating how different clustering methods can reveal
+distinct temporal patterns of gene regulation.</p>
+</div>
+<div id="dataset-description" class="section level1">
+<h1>Dataset Description</h1>
+<p>We’ll use the <code>ALL</code> (Acute Lymphoblastic Leukemia) dataset
+from Bioconductor, which contains gene expression profiles from 128
+different individuals with B-cell acute lymphoblastic leukemia. This is
+a well-characterized dataset that’s perfect for demonstrating clustering
+analysis.</p>
+<p><strong>Key features:</strong> - <strong>12,625 genes</strong>
+measured using Affymetrix HG-U95Av2 chips - <strong>128 samples</strong>
+from patients with different subtypes of ALL - <strong>Rich phenotype
+data</strong> including age, sex, treatment response, and molecular
+subtypes - <strong>Clinical relevance</strong> for understanding
+leukemia subtypes</p>
+</div>
+<div id="loading-required-libraries-and-data" class="section level1">
+<h1>Loading Required Libraries and Data</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(GeneExprClust)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ALL)              <span class="co"># Bioconductor dataset</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(Biobase)          <span class="co"># ExpressionSet manipulation</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(ggplot2)          <span class="co"># Enhanced plotting</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(dplyr)            <span class="co"># Data manipulation</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(knitr)            <span class="co"># Table formatting</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co"># Load the ALL dataset</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">data</span>(ALL)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co"># Examine the dataset structure</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Dataset dimensions: &quot;</span>, <span class="fu">dim</span>(ALL))</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Number of genes: &quot;</span>, <span class="fu">nrow</span>(ALL)) </span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Number of samples: &quot;</span>, <span class="fu">ncol</span>(ALL))</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co"># Look at sample information</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">pData</span>(ALL)[, <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;BT&quot;</span>, <span class="st">&quot;mol.biol&quot;</span>)], <span class="dv">10</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt;       age sex BT mol.biol</span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt; 01005  53   M B2  BCR/ABL</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; 01010  19   M B2      NEG</span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#&gt; 03002  52   F B4  BCR/ABL</span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt; 04006  38   M B1 ALL1/AF4</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; 04007  57   M B2      NEG</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; 04008  17   M B1      NEG</span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; 04010  18   F B1      NEG</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 04016  16   M B1      NEG</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 06002  15   M B2      NEG</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 08001  40   M B2  BCR/ABL</span></span></code></pre></div>
+</div>
+<div id="data-preprocessing-and-subset-selection" class="section level1">
+<h1>Data Preprocessing and Subset Selection</h1>
+<p>For demonstration purposes, we’ll focus on a subset of the data to
+make the analysis more manageable and interpretable.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Filter samples - focus on B-cell samples with molecular biology information</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>selected_samples <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="fu">pData</span>(ALL)<span class="sc">$</span>mol.biol) <span class="sc">&amp;</span> </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                         <span class="fu">pData</span>(ALL)<span class="sc">$</span>BT <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;B1&quot;</span>, <span class="st">&quot;B2&quot;</span>, <span class="st">&quot;B3&quot;</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Selected &quot;</span>, <span class="fu">length</span>(selected_samples), <span class="st">&quot; samples for analysis</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co"># Subset the data</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>ALL_subset <span class="ot">&lt;-</span> ALL[, selected_samples]</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># Filter genes - keep most variable genes to focus on interesting patterns</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>gene_vars <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">exprs</span>(ALL_subset), <span class="dv">1</span>, var, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>top_variable_genes <span class="ot">&lt;-</span> <span class="fu">order</span>(gene_vars, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">2000</span>]</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>ALL_filtered <span class="ot">&lt;-</span> ALL_subset[top_variable_genes, ]</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Final dataset dimensions: &quot;</span>, <span class="fu">dim</span>(ALL_filtered))</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co"># Examine the molecular biology subtypes in our subset</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">pData</span>(ALL_filtered)<span class="sc">$</span>mol.biol)</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; ALL1/AF4  BCR/ABL E2A/PBX1      NEG   NUP-98  p15/p16 </span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt;       10       28        1       38        0        1</span></span></code></pre></div>
+</div>
+<div id="running-the-automated-pipeline" class="section level1">
+<h1>Running the Automated Pipeline</h1>
+<p>Now we’ll demonstrate the power of the automated pipeline. With a
+single function call, we’ll perform comprehensive analysis including
+normalization, clustering, validation, visualization, and pathway
+enrichment.</p>
+<div id="basic-pipeline-run" class="section level2">
+<h2>Basic Pipeline Run</h2>
+<p>Let’s start with a basic analysis using default parameters:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Create output directory</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>output_dir <span class="ot">&lt;-</span> <span class="st">&quot;ALL_analysis_basic&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Run basic pipeline</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>basic_results <span class="ot">&lt;-</span> <span class="fu">run_pipeline</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">expression_set =</span> ALL_filtered,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">output_dir =</span> output_dir,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  </span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="co"># Use standard normalization and filtering</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">norm_method =</span> <span class="st">&quot;quantile&quot;</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">filter_low_expr =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">filter_threshold =</span> <span class="dv">100</span>,  <span class="co"># Higher threshold for microarray data</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  </span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="co"># Try multiple clustering methods</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  <span class="at">clustering_methods =</span> <span class="fu">c</span>(<span class="st">&quot;hierarchical&quot;</span>, <span class="st">&quot;kmeans&quot;</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="at">k_clusters =</span> <span class="dv">6</span>,  <span class="co"># Expecting several molecular subtypes</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="at">target =</span> <span class="st">&quot;gene&quot;</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  </span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="co"># Enable validation and visualization</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="at">perform_validation =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="at">create_plots =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  </span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="co"># Use online gene sets for enrichment</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>  <span class="at">perform_enrichment =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>  <span class="at">gene_sets_source =</span> <span class="st">&quot;online&quot;</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="at">gene_sets_collection =</span> <span class="st">&quot;H&quot;</span>,  <span class="co"># Hallmark pathways</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  </span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>Let’s examine what the pipeline discovered:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Summary of the analysis</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">message</span>(basic_results<span class="sc">$</span>summary)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Clustering results summary</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="cf">for</span> (method <span class="cf">in</span> <span class="fu">names</span>(basic_results<span class="sc">$</span>clustering_results)) {</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  clusters <span class="ot">&lt;-</span> basic_results<span class="sc">$</span>clustering_results[[method]]<span class="sc">$</span>clusters</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, stringr<span class="sc">::</span><span class="fu">str_to_title</span>(method), <span class="st">&quot; Clustering Results:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Number of clusters: &quot;</span>, <span class="fu">length</span>(<span class="fu">unique</span>(clusters)))</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Cluster sizes: &quot;</span>, <span class="fu">table</span>(clusters))</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co"># Validation metrics</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(basic_results<span class="sc">$</span>validation_results) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Clustering Validation Metrics:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>  <span class="cf">for</span> (method <span class="cf">in</span> <span class="fu">names</span>(basic_results<span class="sc">$</span>validation_results)) {</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>    val <span class="ot">&lt;-</span> basic_results<span class="sc">$</span>validation_results[[method]]</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(val<span class="sc">$</span>avg_silhouette)) {</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>      <span class="fu">message</span>(method, <span class="st">&quot; - Average Silhouette Score: &quot;</span>, <span class="fu">round</span>(val<span class="sc">$</span>avg_silhouette, <span class="dv">3</span>))</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>    }</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  }</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="advanced-pipeline-run-with-multiple-methods" class="section level2">
+<h2>Advanced Pipeline Run with Multiple Methods</h2>
+<p>Now let’s run a more comprehensive analysis comparing different
+clustering approaches:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Advanced pipeline with multiple methods and parameters</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>advanced_results <span class="ot">&lt;-</span> <span class="fu">run_pipeline</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">expression_set =</span> ALL_filtered,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="st">&quot;ALL_analysis_advanced&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  </span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="co"># Advanced normalization</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">norm_method =</span> <span class="st">&quot;quantile&quot;</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">filter_low_expr =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">filter_threshold =</span> <span class="dv">100</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  </span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  <span class="co"># Outlier detection</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="at">detect_outliers =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  <span class="at">outlier_method =</span> <span class="st">&quot;mad&quot;</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="at">outlier_threshold =</span> <span class="dv">3</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>  <span class="at">remove_outliers =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  </span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="co"># Multiple clustering methods</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="at">clustering_methods =</span> <span class="fu">c</span>(<span class="st">&quot;hierarchical&quot;</span>, <span class="st">&quot;kmeans&quot;</span>, <span class="st">&quot;dbscan&quot;</span>),</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  <span class="at">k_clusters =</span> <span class="dv">6</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="at">max_k =</span> <span class="dv">12</span>,  <span class="co"># For elbow plot</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="at">dbscan_eps =</span> <span class="fl">0.8</span>,  <span class="co"># DBSCAN parameters</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>  <span class="at">dbscan_minPts =</span> <span class="dv">5</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>  </span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>  <span class="co"># Enhanced validation</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>  <span class="at">perform_validation =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>  <span class="at">gap_statistic =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>  <span class="at">gap_max_k =</span> <span class="dv">10</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>  <span class="at">gap_B =</span> <span class="dv">50</span>,  <span class="co"># More bootstrap samples</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>  </span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a>  <span class="co"># Rich visualization</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a>  <span class="at">create_plots =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a>  <span class="at">pca_color_by =</span> <span class="st">&quot;mol.biol&quot;</span>,  <span class="co"># Color PCA by molecular subtype</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a>  <span class="at">heatmap_scale =</span> <span class="st">&quot;row&quot;</span>,</span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a>  </span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a>  <span class="co"># Comprehensive enrichment analysis</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a>  <span class="at">perform_enrichment =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a>  <span class="at">gene_sets_source =</span> <span class="st">&quot;online&quot;</span>,</span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>  <span class="at">gene_sets_collection =</span> <span class="st">&quot;C2&quot;</span>,  <span class="co"># Curated gene sets (larger collection)</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>  <span class="at">enrichment_p_threshold =</span> <span class="fl">0.05</span>,</span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>  <span class="at">min_gene_set_size =</span> <span class="dv">10</span>,</span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>  <span class="at">max_gene_set_size =</span> <span class="dv">200</span>,</span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>  </span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="analyzing-the-results" class="section level1">
+<h1>Analyzing the Results</h1>
+<div id="clustering-performance-comparison" class="section level2">
+<h2>Clustering Performance Comparison</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Compare clustering methods</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>methods <span class="ot">&lt;-</span> <span class="fu">names</span>(advanced_results<span class="sc">$</span>clustering_results)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>comparison_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">Method =</span> <span class="fu">character</span>(),</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">N_Clusters =</span> <span class="fu">integer</span>(),</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">Avg_Silhouette =</span> <span class="fu">numeric</span>(),</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">WSS =</span> <span class="fu">numeric</span>(),</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="cf">for</span> (method <span class="cf">in</span> methods) {</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  clusters <span class="ot">&lt;-</span> advanced_results<span class="sc">$</span>clustering_results[[method]]<span class="sc">$</span>clusters</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  </span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="co"># Handle DBSCAN noise points</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  <span class="cf">if</span> (method <span class="sc">==</span> <span class="st">&quot;dbscan&quot;</span>) {</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    n_clusters <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">unique</span>(clusters[clusters <span class="sc">!=</span> <span class="dv">0</span>]))</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>    n_noise <span class="ot">&lt;-</span> <span class="fu">sum</span>(clusters <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    n_clusters <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">unique</span>(clusters))</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>    n_noise <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  }</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  </span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="co"># Get validation metrics</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>  val <span class="ot">&lt;-</span> advanced_results<span class="sc">$</span>validation_results[[method]]</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>  avg_sil <span class="ot">&lt;-</span> <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(val<span class="sc">$</span>avg_silhouette)) <span class="fu">round</span>(val<span class="sc">$</span>avg_silhouette, <span class="dv">3</span>) <span class="cf">else</span> <span class="cn">NA</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>  wss <span class="ot">&lt;-</span> <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(val<span class="sc">$</span>wss)) <span class="fu">round</span>(val<span class="sc">$</span>wss, <span class="dv">0</span>) <span class="cf">else</span> <span class="cn">NA</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>  </span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>  comparison_df <span class="ot">&lt;-</span> <span class="fu">rbind</span>(comparison_df, <span class="fu">data.frame</span>(</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>    <span class="at">Method =</span> stringr<span class="sc">::</span><span class="fu">str_to_title</span>(method),</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>    <span class="at">N_Clusters =</span> n_clusters,</span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>    <span class="at">N_Noise =</span> <span class="cf">if</span>(method <span class="sc">==</span> <span class="st">&quot;dbscan&quot;</span>) n_noise <span class="cf">else</span> <span class="cn">NA</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>    <span class="at">Avg_Silhouette =</span> avg_sil,</span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>    <span class="at">WSS =</span> wss</span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>  ))</span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>}</span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="fu">kable</span>(comparison_df, <span class="at">caption =</span> <span class="st">&quot;Clustering Methods Comparison&quot;</span>)</span></code></pre></div>
+<table>
+<caption>Clustering Methods Comparison</caption>
+<thead>
+<tr class="header">
+<th align="left">Method</th>
+<th align="right">N_Clusters</th>
+<th align="right">N_Noise</th>
+<th align="left">Avg_Silhouette</th>
+<th align="left">WSS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Hierarchical</td>
+<td align="right">6</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Kmeans</td>
+<td align="right">6</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Dbscan</td>
+<td align="right">0</td>
+<td align="right">1818</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="biological-interpretation" class="section level2">
+<h2>Biological Interpretation</h2>
+<p>Let’s examine how well the clustering captures known biological
+subtypes:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Get the molecular biology data for the samples that were actually clustered</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>mol_biol <span class="ot">&lt;-</span> <span class="fu">pData</span>(ALL_filtered)<span class="sc">$</span>mol.biol</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="cf">for</span> (method <span class="cf">in</span> methods) {</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  clusters <span class="ot">&lt;-</span> advanced_results<span class="sc">$</span>clustering_results[[method]]<span class="sc">$</span>clusters</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  </span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, stringr<span class="sc">::</span><span class="fu">str_to_title</span>(method), <span class="st">&quot; Clustering vs Molecular Biology Subtypes:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Length check - mol_biol: &quot;</span>, <span class="fu">length</span>(mol_biol), <span class="st">&quot; clusters: &quot;</span>, <span class="fu">length</span>(clusters))</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  </span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="co"># Ensure both vectors have the same length</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(mol_biol) <span class="sc">!=</span> <span class="fu">length</span>(clusters)) {</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">&quot;Warning: Length mismatch detected. Attempting to align data...</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    </span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    <span class="co"># Option 1: If clusters is shorter (due to outlier removal), subset mol_biol</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(clusters) <span class="sc">&lt;</span> <span class="fu">length</span>(mol_biol)) {</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>      <span class="co"># Get the sample names or indices that were actually used in clustering</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>      <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(<span class="fu">names</span>(clusters))) {</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>        <span class="co"># If clusters has names, match by names</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>        sample_names <span class="ot">&lt;-</span> <span class="fu">names</span>(clusters)</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>        mol_biol_aligned <span class="ot">&lt;-</span> mol_biol[<span class="fu">match</span>(sample_names, <span class="fu">colnames</span>(ALL_filtered))]</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>        <span class="co"># If no names, assume first n samples were used</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>        mol_biol_aligned <span class="ot">&lt;-</span> mol_biol[<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(clusters)]</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>      }</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>      <span class="co"># Option 2: If mol_biol is shorter, subset clusters</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>      clusters_aligned <span class="ot">&lt;-</span> clusters[<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(mol_biol)]</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>      mol_biol_aligned <span class="ot">&lt;-</span> mol_biol</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>      clusters <span class="ot">&lt;-</span> clusters_aligned</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>    }</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>    mol_biol_aligned <span class="ot">&lt;-</span> mol_biol</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>  }</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>  </span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>  <span class="co"># Verify alignment</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(mol_biol_aligned) <span class="sc">!=</span> <span class="fu">length</span>(clusters)) {</span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">&quot;Error: Could not align data lengths. Skipping &quot;</span>, method)</span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a>    <span class="cf">next</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a>  }</span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>  </span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a>  <span class="co"># Create contingency table</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a>  <span class="cf">if</span> (method <span class="sc">==</span> <span class="st">&quot;dbscan&quot;</span>) {</span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a>    <span class="co"># Remove noise points (cluster 0) for comparison</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a>    non_noise <span class="ot">&lt;-</span> clusters <span class="sc">!=</span> <span class="dv">0</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">sum</span>(non_noise) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">&quot;All points classified as noise in DBSCAN. Skipping comparison.</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>      <span class="cf">next</span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>    }</span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a>    cont_table <span class="ot">&lt;-</span> <span class="fu">table</span>(mol_biol_aligned[non_noise], clusters[non_noise])</span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a>    cont_table <span class="ot">&lt;-</span> <span class="fu">table</span>(mol_biol_aligned, clusters)</span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a>  }</span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a>  </span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a>  <span class="fu">print</span>(cont_table)</span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a>  </span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a>  <span class="co"># Calculate adjusted rand index for clustering quality</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">requireNamespace</span>(<span class="st">&quot;mclust&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a>    <span class="fu">tryCatch</span>({</span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a>      <span class="cf">if</span> (method <span class="sc">==</span> <span class="st">&quot;dbscan&quot;</span>) {</span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a>        ari <span class="ot">&lt;-</span> mclust<span class="sc">::</span><span class="fu">adjustedRandIndex</span>(mol_biol_aligned[non_noise], clusters[non_noise])</span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a>        ari <span class="ot">&lt;-</span> mclust<span class="sc">::</span><span class="fu">adjustedRandIndex</span>(mol_biol_aligned, clusters)</span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a>      }</span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">&quot;Adjusted Rand Index: &quot;</span>, <span class="fu">round</span>(ari, <span class="dv">3</span>))</span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a>    }, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">&quot;Could not calculate ARI: &quot;</span>, e<span class="sc">$</span>message)</span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a>    })</span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a>  }</span>
+<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a>}</span>
+<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt;                 clusters</span></span>
+<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a><span class="co">#&gt; mol_biol_aligned  1  2  3  4  5  6</span></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt;         ALL1/AF4  4  1  3  2  0  0</span></span>
+<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a><span class="co">#&gt;         BCR/ABL  10  2  0  7  5  4</span></span>
+<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a><span class="co">#&gt;         E2A/PBX1  0  0  0  1  0  0</span></span>
+<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a><span class="co">#&gt;         NEG      11  6  1 12  5  3</span></span>
+<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a><span class="co">#&gt;         NUP-98    0  0  0  0  0  0</span></span>
+<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a><span class="co">#&gt;         p15/p16   0  0  1  0  0  0</span></span>
+<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a><span class="co">#&gt;                 clusters</span></span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; mol_biol_aligned  1  2  3  4  5  6</span></span>
+<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt;         ALL1/AF4  1  1  0  1  2  5</span></span>
+<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt;         BCR/ABL   6  0  5  9  2  6</span></span>
+<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt;         E2A/PBX1  0  0  0  1  0  0</span></span>
+<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a><span class="co">#&gt;         NEG       8  0  6 14  3  7</span></span>
+<span id="cb7-84"><a href="#cb7-84" tabindex="-1"></a><span class="co">#&gt;         NUP-98    0  0  0  0  0  0</span></span>
+<span id="cb7-85"><a href="#cb7-85" tabindex="-1"></a><span class="co">#&gt;         p15/p16   0  1  0  0  0  0</span></span></code></pre></div>
+</div>
+<div id="pathway-enrichment-analysis" class="section level2">
+<h2>Pathway Enrichment Analysis</h2>
+<p>One of the most powerful features is the automated pathway enrichment
+analysis:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Examine enrichment results</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(advanced_results<span class="sc">$</span>enrichment_results) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;Pathway Enrichment Analysis Results:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  </span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="cf">for</span> (method <span class="cf">in</span> <span class="fu">names</span>(advanced_results<span class="sc">$</span>enrichment_results)) {</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    enrich <span class="ot">&lt;-</span> advanced_results<span class="sc">$</span>enrichment_results[[method]]</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    </span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nrow</span>(enrich<span class="sc">$</span>summary) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, stringr<span class="sc">::</span><span class="fu">str_to_title</span>(method), <span class="st">&quot; - Top Enriched Pathways:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>      </span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>      <span class="co"># Show top 5 pathways per cluster</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>      top_pathways <span class="ot">&lt;-</span> enrich<span class="sc">$</span>summary <span class="sc">%&gt;%</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>        <span class="fu">group_by</span>(cluster) <span class="sc">%&gt;%</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>        <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>        <span class="fu">select</span>(cluster, pathway, p_adjusted, enrichment_ratio, genes_overlap)</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>      </span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>      <span class="fu">print</span>(<span class="fu">kable</span>(top_pathways, <span class="at">digits =</span> <span class="dv">4</span>))</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, stringr<span class="sc">::</span><span class="fu">str_to_title</span>(method), <span class="st">&quot; - No significant pathways found</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>    }</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>  }</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="visualization-analysis" class="section level2">
+<h2>Visualization Analysis</h2>
+<p>The pipeline automatically generates comprehensive visualizations.
+Let’s examine some key plots:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Display key plots if they were generated</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>plots_available <span class="ot">&lt;-</span> <span class="fu">names</span>(advanced_results<span class="sc">$</span>plots)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">message</span>(<span class="st">&quot;Generated plots: &quot;</span>, <span class="fu">paste</span>(plots_available, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co"># PCA plot colored by molecular subtype</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="cf">if</span> (<span class="st">&quot;pca&quot;</span> <span class="sc">%in%</span> plots_available) {</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="fu">print</span>(advanced_results<span class="sc">$</span>plots<span class="sc">$</span>pca)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>}</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"># Elbow plot for optimal k selection</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="cf">if</span> (<span class="st">&quot;elbow&quot;</span> <span class="sc">%in%</span> plots_available) {</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="fu">print</span>(advanced_results<span class="sc">$</span>plots<span class="sc">$</span>elbow)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>}</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; R version 4.4.2 (2024-10-31 ucrt)</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; Running under: Windows 11 x64 (build 26100)</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; [1] LC_COLLATE=C                   LC_CTYPE=Italian_Italy.utf8   </span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; [3] LC_MONETARY=Italian_Italy.utf8 LC_NUMERIC=C                  </span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt; [5] LC_TIME=Italian_Italy.utf8    </span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; time zone: Europe/Rome</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; tzcode source: internal</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#&gt; [1] knitr_1.50          dplyr_1.1.4         ggplot2_3.5.2      </span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt; [4] ALL_1.48.0          Biobase_2.66.0      BiocGenerics_0.52.0</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; [7] GeneExprClust_0.1.0</span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co">#&gt;   [1] DBI_1.2.3                   rlang_1.1.4                </span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co">#&gt;   [3] magrittr_2.0.3              clue_0.3-66                </span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a><span class="co">#&gt;   [5] GetoptLong_1.0.5            msigdbr_24.1.0             </span></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="co">#&gt;   [7] matrixStats_1.5.0           compiler_4.4.2             </span></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="co">#&gt;   [9] RSQLite_2.3.11              mgcv_1.9-1                 </span></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co">#&gt;  [11] systemfonts_1.2.3           png_0.1-8                  </span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="co">#&gt;  [13] vctrs_0.6.5                 reshape2_1.4.4             </span></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="co">#&gt;  [15] sva_3.54.0                  stringr_1.5.1              </span></span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="co">#&gt;  [17] pkgconfig_2.0.3             shape_1.4.6.1              </span></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co">#&gt;  [19] crayon_1.5.3                fastmap_1.2.0              </span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co">#&gt;  [21] XVector_0.46.0              labeling_0.4.3             </span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="co">#&gt;  [23] rmarkdown_2.29              UCSC.utils_1.2.0           </span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="co">#&gt;  [25] preprocessCore_1.68.0       ragg_1.4.0                 </span></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co">#&gt;  [27] bit_4.6.0                   xfun_0.51                  </span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a><span class="co">#&gt;  [29] zlibbioc_1.52.0             cachem_1.1.0               </span></span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a><span class="co">#&gt;  [31] GenomeInfoDb_1.42.3         jsonlite_1.8.9             </span></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co">#&gt;  [33] blob_1.2.4                  DelayedArray_0.32.0        </span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a><span class="co">#&gt;  [35] BiocParallel_1.40.2         parallel_4.4.2             </span></span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="co">#&gt;  [37] cluster_2.1.6               R6_2.6.1                   </span></span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a><span class="co">#&gt;  [39] bslib_0.9.0                 stringi_1.8.4              </span></span>
+<span id="cb11-46"><a href="#cb11-46" tabindex="-1"></a><span class="co">#&gt;  [41] RColorBrewer_1.1-3          limma_3.62.2               </span></span>
+<span id="cb11-47"><a href="#cb11-47" tabindex="-1"></a><span class="co">#&gt;  [43] genefilter_1.88.0           GenomicRanges_1.58.0       </span></span>
+<span id="cb11-48"><a href="#cb11-48" tabindex="-1"></a><span class="co">#&gt;  [45] jquerylib_0.1.4             Rcpp_1.0.13-1              </span></span>
+<span id="cb11-49"><a href="#cb11-49" tabindex="-1"></a><span class="co">#&gt;  [47] assertthat_0.2.1            SummarizedExperiment_1.36.0</span></span>
+<span id="cb11-50"><a href="#cb11-50" tabindex="-1"></a><span class="co">#&gt;  [49] iterators_1.0.14            IRanges_2.40.1             </span></span>
+<span id="cb11-51"><a href="#cb11-51" tabindex="-1"></a><span class="co">#&gt;  [51] Matrix_1.7-1                splines_4.4.2              </span></span>
+<span id="cb11-52"><a href="#cb11-52" tabindex="-1"></a><span class="co">#&gt;  [53] tidyselect_1.2.1            abind_1.4-8                </span></span>
+<span id="cb11-53"><a href="#cb11-53" tabindex="-1"></a><span class="co">#&gt;  [55] yaml_2.3.10                 doParallel_1.0.17          </span></span>
+<span id="cb11-54"><a href="#cb11-54" tabindex="-1"></a><span class="co">#&gt;  [57] codetools_0.2-20            curl_6.2.3                 </span></span>
+<span id="cb11-55"><a href="#cb11-55" tabindex="-1"></a><span class="co">#&gt;  [59] lattice_0.22-6              tibble_3.2.1               </span></span>
+<span id="cb11-56"><a href="#cb11-56" tabindex="-1"></a><span class="co">#&gt;  [61] plyr_1.8.9                  withr_3.0.2                </span></span>
+<span id="cb11-57"><a href="#cb11-57" tabindex="-1"></a><span class="co">#&gt;  [63] KEGGREST_1.46.0             evaluate_1.0.3             </span></span>
+<span id="cb11-58"><a href="#cb11-58" tabindex="-1"></a><span class="co">#&gt;  [65] survival_3.7-0              mclust_6.1.1               </span></span>
+<span id="cb11-59"><a href="#cb11-59" tabindex="-1"></a><span class="co">#&gt;  [67] circlize_0.4.16             Biostrings_2.74.1          </span></span>
+<span id="cb11-60"><a href="#cb11-60" tabindex="-1"></a><span class="co">#&gt;  [69] pillar_1.10.2               MatrixGenerics_1.18.1      </span></span>
+<span id="cb11-61"><a href="#cb11-61" tabindex="-1"></a><span class="co">#&gt;  [71] foreach_1.5.2               stats4_4.4.2               </span></span>
+<span id="cb11-62"><a href="#cb11-62" tabindex="-1"></a><span class="co">#&gt;  [73] generics_0.1.4              dbscan_1.2.2               </span></span>
+<span id="cb11-63"><a href="#cb11-63" tabindex="-1"></a><span class="co">#&gt;  [75] S4Vectors_0.44.0            scales_1.4.0               </span></span>
+<span id="cb11-64"><a href="#cb11-64" tabindex="-1"></a><span class="co">#&gt;  [77] xtable_1.8-4                glue_1.8.0                 </span></span>
+<span id="cb11-65"><a href="#cb11-65" tabindex="-1"></a><span class="co">#&gt;  [79] tools_4.4.2                 annotate_1.84.0            </span></span>
+<span id="cb11-66"><a href="#cb11-66" tabindex="-1"></a><span class="co">#&gt;  [81] locfit_1.5-9.12             babelgene_22.9             </span></span>
+<span id="cb11-67"><a href="#cb11-67" tabindex="-1"></a><span class="co">#&gt;  [83] XML_3.99-0.18               grid_4.4.2                 </span></span>
+<span id="cb11-68"><a href="#cb11-68" tabindex="-1"></a><span class="co">#&gt;  [85] AnnotationDbi_1.68.0        edgeR_4.4.2                </span></span>
+<span id="cb11-69"><a href="#cb11-69" tabindex="-1"></a><span class="co">#&gt;  [87] colorspace_2.1-1            nlme_3.1-166               </span></span>
+<span id="cb11-70"><a href="#cb11-70" tabindex="-1"></a><span class="co">#&gt;  [89] GenomeInfoDbData_1.2.13     cli_3.6.3                  </span></span>
+<span id="cb11-71"><a href="#cb11-71" tabindex="-1"></a><span class="co">#&gt;  [91] textshaping_1.0.1           S4Arrays_1.6.0             </span></span>
+<span id="cb11-72"><a href="#cb11-72" tabindex="-1"></a><span class="co">#&gt;  [93] ComplexHeatmap_2.22.0       ggdendro_0.2.0             </span></span>
+<span id="cb11-73"><a href="#cb11-73" tabindex="-1"></a><span class="co">#&gt;  [95] gtable_0.3.6                DESeq2_1.46.0              </span></span>
+<span id="cb11-74"><a href="#cb11-74" tabindex="-1"></a><span class="co">#&gt;  [97] sass_0.4.10                 digest_0.6.37              </span></span>
+<span id="cb11-75"><a href="#cb11-75" tabindex="-1"></a><span class="co">#&gt;  [99] SparseArray_1.6.2           rjson_0.2.23               </span></span>
+<span id="cb11-76"><a href="#cb11-76" tabindex="-1"></a><span class="co">#&gt; [101] farver_2.1.2                memoise_2.0.1              </span></span>
+<span id="cb11-77"><a href="#cb11-77" tabindex="-1"></a><span class="co">#&gt; [103] htmltools_0.5.8.1           lifecycle_1.0.4            </span></span>
+<span id="cb11-78"><a href="#cb11-78" tabindex="-1"></a><span class="co">#&gt; [105] httr_1.4.7                  statmod_1.5.0              </span></span>
+<span id="cb11-79"><a href="#cb11-79" tabindex="-1"></a><span class="co">#&gt; [107] GlobalOptions_0.1.2         bit64_4.6.0-1              </span></span>
+<span id="cb11-80"><a href="#cb11-80" tabindex="-1"></a><span class="co">#&gt; [109] MASS_7.3-61</span></span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

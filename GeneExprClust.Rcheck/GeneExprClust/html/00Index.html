@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head><title>R: Gene Expression Clustering and Enrichment Analysis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+<h1> Gene Expression Clustering and Enrichment Analysis
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;GeneExprClust&rsquo; version 0.1.0</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">User guides, package vignettes and other documentation.</a></li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="cluster_expression.html">cluster_expression</a></td>
+<td>Unified clustering function with multiple methods</td></tr>
+<tr><td style="width: 25%;"><a href="create_example_gene_sets.html">create_example_gene_sets</a></td>
+<td>Create Simple Example Gene Sets</td></tr>
+<tr><td style="width: 25%;"><a href="dbscan_cluster.html">dbscan_cluster</a></td>
+<td>Cluster genes using DBSCAN</td></tr>
+<tr><td style="width: 25%;"><a href="detect_outliers.html">detect_outliers</a></td>
+<td>Detect and optionally remove outlier genes based on variability</td></tr>
+<tr><td style="width: 25%;"><a href="eset.html">eset</a></td>
+<td>Example Expression Set</td></tr>
+<tr><td style="width: 25%;"><a href="extract_gene_names.html">extract_gene_names</a></td>
+<td>Extract Gene Names from ExpressionSet</td></tr>
+<tr><td style="width: 25%;"><a href="filter_low_expression.html">filter_low_expression</a></td>
+<td>Filter low-expressed genes from expression matrix and ExpressionSet</td></tr>
+<tr><td style="width: 25%;"><a href="gap_statistic.html">gap_statistic</a></td>
+<td>Compute Gap Statistic using k-means</td></tr>
+<tr><td style="width: 25%;"><a href="gap_statistic_parallel.html">gap_statistic_parallel</a></td>
+<td>Parallel Gap Statistic Computation</td></tr>
+<tr><td style="width: 25%;"><a href="get_cluster_results.html">get_cluster_results</a></td>
+<td>Get Detailed Results for Specific Cluster</td></tr>
+<tr><td style="width: 25%;"><a href="hierarchical_cluster.html">hierarchical_cluster</a></td>
+<td>Hierarchical clustering of genes or samples</td></tr>
+<tr><td style="width: 25%;"><a href="kmeans_cluster.html">kmeans_cluster</a></td>
+<td>K-means clustering of genes or samples</td></tr>
+<tr><td style="width: 25%;"><a href="kmeans_parallel_k.html">kmeans_parallel_k</a></td>
+<td>Parallel K-means with Multiple K Values</td></tr>
+<tr><td style="width: 25%;"><a href="load_gmt_gene_sets.html">load_gmt_gene_sets</a></td>
+<td>Load Gene Sets from GMT File</td></tr>
+<tr><td style="width: 25%;"><a href="load_online_gene_sets.html">load_online_gene_sets</a></td>
+<td>Load Gene Sets from Online Databases</td></tr>
+<tr><td style="width: 25%;"><a href="normalize_data.html">normalize_data</a></td>
+<td>Normalize expression data in an ExpressionSet with optional batch correction and filtering</td></tr>
+<tr><td style="width: 25%;"><a href="ora_from_expression_set.html">ora_from_expression_set</a></td>
+<td>Perform ORA Analysis from ExpressionSet and Clusters</td></tr>
+<tr><td style="width: 25%;"><a href="perform_batch_correction.html">perform_batch_correction</a></td>
+<td>Perform batch correction on expression matrix using ComBat</td></tr>
+<tr><td style="width: 25%;"><a href="perform_normalization.html">perform_normalization</a></td>
+<td>Perform normalization on an expression matrix</td></tr>
+<tr><td style="width: 25%;"><a href="perform_ora.html">perform_ora</a></td>
+<td>Perform Over-Representation Analysis (ORA) for Gene Clusters</td></tr>
+<tr><td style="width: 25%;"><a href="perform_ora_parallel.html">perform_ora_parallel</a></td>
+<td>Parallel Over-Representation Analysis (ORA) for Gene Clusters</td></tr>
+<tr><td style="width: 25%;"><a href="plot_cluster_profiles.html">plot_cluster_profiles</a></td>
+<td>Plot average gene expression profiles per cluster</td></tr>
+<tr><td style="width: 25%;"><a href="plot_dbscan_results.html">plot_dbscan_results</a></td>
+<td>Plot DBSCAN clustering results using PCA</td></tr>
+<tr><td style="width: 25%;"><a href="plot_dendrogram.html">plot_dendrogram</a></td>
+<td>Plot dendrogram from hierarchical clustering model</td></tr>
+<tr><td style="width: 25%;"><a href="plot_elbow.html">plot_elbow</a></td>
+<td>Elbow plot for selecting number of clusters in k-means</td></tr>
+<tr><td style="width: 25%;"><a href="plot_heatmap.html">plot_heatmap</a></td>
+<td>Plot heatmap of expression data with optional clustering annotation and scaling</td></tr>
+<tr><td style="width: 25%;"><a href="plot_pca.html">plot_pca</a></td>
+<td>PCA plot of samples</td></tr>
+<tr><td style="width: 25%;"><a href="read_expression.html">read_expression</a></td>
+<td>Read gene expression data from file</td></tr>
+<tr><td style="width: 25%;"><a href="run_pipeline.html">run_pipeline</a></td>
+<td>Complete Gene Expression Analysis Pipeline</td></tr>
+<tr><td style="width: 25%;"><a href="silhouette_score.html">silhouette_score</a></td>
+<td>Compute silhouette width for clustering</td></tr>
+<tr><td style="width: 25%;"><a href="summarize_ora_results.html">summarize_ora_results</a></td>
+<td>Summarize ORA Results</td></tr>
+<tr><td style="width: 25%;"><a href="wss_score.html">wss_score</a></td>
+<td>Compute Within-Cluster Sum of Squares (WSS)</td></tr>
+</table>
+</div></body></html>
